@@ -108,7 +108,7 @@ namespace lab2
     class PlanetRepository
     {
         private SqliteConnection connection;
-        public PlanetRepository(SqliteConnection connection) // some hell is happening here :)
+        public PlanetRepository(SqliteConnection connection)
         {
             this.connection = connection;
         }
@@ -160,12 +160,12 @@ namespace lab2
             SqliteCommand command = connection.CreateCommand();
             command.CommandText = 
             @"
-                INSERT INTO planets (id, name, size, color) 
-                VALUES ($id, $name, $size, $color);
+                INSERT INTO planets (name, size, color) 
+                VALUES ($name, $size, $color);
             
                 SELECT last_insert_rowid();
             ";
-            command.Parameters.AddWithValue("$id", planet.id);
+            
             command.Parameters.AddWithValue("$name", planet.name);
             command.Parameters.AddWithValue("$size", planet.size);
             command.Parameters.AddWithValue("$color", planet.color);
@@ -173,10 +173,10 @@ namespace lab2
             long newId = (long)command.ExecuteScalar();
             
             connection.Close();
-            return (int)newId; // check!!!
+            return (int)newId;
         }
 
-        public int GetTotalPages()
+        public long GetTotalPages()
         {
             connection.Open();
 
@@ -185,11 +185,11 @@ namespace lab2
             @"
                 SELECT COUNT(*) FROM planets;
             ";
-            int numOfRows = (int)command.ExecuteScalar();
+            long numOfRows = (long)command.ExecuteScalar();
 
             connection.Close();
 
-            int pages = 0;
+            long pages = 0;
             if(numOfRows%10 != 0)
             {
                 pages = numOfRows/10 + 1;
@@ -204,20 +204,23 @@ namespace lab2
         public ListPlanet GetPage(int pageNumber) 
         {
             int count = 1;
+            bool readyRead = false;
             ListPlanet plList = new ListPlanet();
+            //
             connection.Open();
+            //
             SqliteCommand command = connection.CreateCommand();
             command.CommandText = @"SELECT * FROM planets";
             
             SqliteDataReader reader = command.ExecuteReader();
 
             while (reader.Read())
-            {                
-                if(count != ((pageNumber-1)*10 + 1))
+            {     
+                if(count == ((pageNumber-1)*10 + 1))
                 {
-                    continue;
-                }
-                else
+                    readyRead = true;
+                } 
+                if(readyRead)
                 {
                     if(count <= pageNumber*10)
                     {
@@ -228,16 +231,12 @@ namespace lab2
                         p.color = reader.GetString(3);
                         plList.Add(p);
                     }
-                    else
-                    {
-                        break;
-                    }                    
                 }
-                count++;
-            }            
+                count++;             
+            }
             reader.Close();
+            //
             connection.Close();
-
             return plList;
         }
     
@@ -283,6 +282,11 @@ namespace lab2
                 string input = ReadLine();
                 if(input.StartsWith("getById"))
                 {
+                    if(input.Split().Length != 2)
+                    {
+                        WriteLine(">> incorrect input. (some parts of the command are missed)");
+                        continue;
+                    }
                     string mayBeId = input.Split()[1];
                     int id = 0;
                     if(!int.TryParse(mayBeId, out id))
@@ -302,6 +306,11 @@ namespace lab2
                 }
                 else if (input.StartsWith("deleteById"))
                 {
+                    if(input.Split().Length != 2)
+                    {
+                        WriteLine(">> incorrect input. (some parts of the command are missed)");
+                        continue;
+                    }
                     string mayBeId = input.Split()[1];
                     int id = 0;
                     if(!int.TryParse(mayBeId, out id))
@@ -321,11 +330,16 @@ namespace lab2
                 }
                 else if (input.StartsWith("insert"))
                 {
+                    if(input.Split().Length != 2)
+                    {
+                        WriteLine(">> incorrect input. (some parts of the command are missed)"); 
+                        continue;
+                    }
                     string csvRow = input.Split()[1];
                     Planet p = CSVRowToPlanet(csvRow);
                     if(p == null)
                     {
-                        WriteLine(">> wrong num of cols."); // to change message!!!
+                        WriteLine(">> incorrect input.");
                         continue;
                     }
                     int newId = galaxyRemoteControl.Insert(p);
@@ -335,16 +349,21 @@ namespace lab2
                     }
                     else 
                     {
-                        WriteLine(">> Planet added. New id is: " + newId);
+                        WriteLine(">> Planet added. New id: " + newId);
                     }
                 }
                 else if (input == "getTotalPages")
                 {
-                    int pages = galaxyRemoteControl.GetTotalPages();
-                    WriteLine($">> There are {pages} pages."); // to change message!!!
+                    long pages = galaxyRemoteControl.GetTotalPages();
+                    WriteLine($">> There are {pages} pages.");
                 }
                 else if (input.StartsWith("getPage"))
                 {
+                    if(input.Split().Length != 2)
+                    {
+                        WriteLine(">> incorrect input. (some parts of the command are missed)");
+                        continue;
+                    }
                     string mayBePageN = input.Split()[1];
                     int n = 0;
                     if(!int.TryParse(mayBePageN, out n))
@@ -354,7 +373,7 @@ namespace lab2
                     }
                     if(n <= 0 || n > galaxyRemoteControl.GetTotalPages())
                     {
-                        WriteLine(">> There is no such page"); // to change message!!!
+                        WriteLine(">> There is no such page");
                         continue;
                     }
                     ListPlanet planetList = galaxyRemoteControl.GetPage(n);
@@ -362,6 +381,11 @@ namespace lab2
                 }
                 else if (input.StartsWith("export"))
                 {
+                    if(input.Split().Length != 2)
+                    {
+                        WriteLine(">> incorrect input. (some parts of the command are missed)");
+                        continue;
+                    }
                     string mayBeV = input.Split()[1];
                     int valueX = 0;
                     if(!int.TryParse(mayBeV, out valueX))
@@ -372,8 +396,8 @@ namespace lab2
                     ListPlanet list = galaxyRemoteControl.GetExport(valueX);
                     string path = "./export.csv";
                     WriteAllPlanets(path, list);
-                    // count lines in csv !!!!
-                    // WriteLine("File name: 'export.csv'; num of lines: {}");
+                    long lines = CountCsvLines(path);
+                    WriteLine($"File name: 'export.csv'; number of lines: {lines}");
                 }
                 else if(input == "exit")
                 {
@@ -384,6 +408,24 @@ namespace lab2
                     WriteLine(">> incorrect input.");
                 }
             }
+        }
+
+        static long CountCsvLines(string path)
+        {
+            long count = 0;
+            StreamReader sr = new StreamReader(path);
+            string s = "";
+            while (true)
+            {
+                s = sr.ReadLine();
+                if (s == null)
+                {
+                    break;
+                }
+                count++;
+            }
+            sr.Close();
+            return count;
         }
 
         static void WriteAllPlanets(string path, ListPlanet planets)
@@ -418,15 +460,20 @@ namespace lab2
         static Planet CSVRowToPlanet (string s)
         {
             string[] colsInRow = s.Split(',');
-            if(colsInRow.Length != 4)
+            if(colsInRow.Length != 3)
             {
                 return null;
             }
             Planet p1 = new Planet();
-            p1.id = int.Parse(colsInRow[0]); // try parse and error
-            p1.name = colsInRow[1];
-            p1.size = double.Parse(colsInRow[2]); // try parse and error
-            p1.color = colsInRow[3];
+            p1.name = colsInRow[0];
+            string forSize = colsInRow[1];
+            double newSize;
+            if(!double.TryParse(forSize, out newSize))
+            {
+                return null;
+            }
+            p1.size = newSize;
+            p1.color = colsInRow[2];
             return p1;
         }
 
