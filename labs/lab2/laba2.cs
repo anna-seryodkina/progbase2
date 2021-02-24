@@ -1,6 +1,7 @@
 ﻿using System;
 using static System.Console;
 using Microsoft.Data.Sqlite;
+using System.IO;
 
 
 namespace lab2
@@ -202,27 +203,77 @@ namespace lab2
 
         public ListPlanet GetPage(int pageNumber) 
         {
-            // in: page num; 
-            // out: planet list
-            /*
-            пройтись по списку (N рядків скіпнуть)
-            і коли дійдем до потрібного N+1 го рядка
-            то в вайлі M к-ть (10 aбо менше) разів зробити list.add()
-            */
-            throw new NotImplementedException();
+            int count = 1;
+            ListPlanet plList = new ListPlanet();
+            connection.Open();
+            SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"SELECT * FROM planets";
+            
+            SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {                
+                if(count != ((pageNumber-1)*10 + 1))
+                {
+                    continue;
+                }
+                else
+                {
+                    if(count <= pageNumber*10)
+                    {
+                        Planet p = new Planet();
+                        p.id = int.Parse(reader.GetString(0));
+                        p.name = reader.GetString(1);
+                        p.size = Convert.ToDouble(reader.GetString(2));
+                        p.color = reader.GetString(3);
+                        plList.Add(p);
+                    }
+                    else
+                    {
+                        break;
+                    }                    
+                }
+                count++;
+            }            
+            reader.Close();
+            connection.Close();
+
+            return plList;
         }
     
-        // public ListPlanet GetExport(T valueX) 
-        // {
-        //     throw new NotImplementedException();
-        // }
+        public ListPlanet GetExport(int valueX) 
+        {
+            ListPlanet plList = new ListPlanet();
+            connection.Open();
+            SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"SELECT * FROM planets";
+            
+            SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                if(int.Parse(reader.GetString(0)) > valueX)
+                {
+                    Planet p = new Planet();
+                    p.id = int.Parse(reader.GetString(0));
+                    p.name = reader.GetString(1);
+                    p.size = Convert.ToDouble(reader.GetString(2));
+                    p.color = reader.GetString(3);
+                    plList.Add(p);
+                }
+            }
+            reader.Close();
+            connection.Close();
+
+            return plList;
+        }
     }
 
     class Program
     {
         static void Main(string[] args)
         {
-            string databaseFileName = "planets.db";
+            string databaseFileName = "galaxy.db";
             SqliteConnection connection = new SqliteConnection($"Data Source={databaseFileName}");
             PlanetRepository galaxyRemoteControl = new PlanetRepository(connection);
             //
@@ -306,11 +357,23 @@ namespace lab2
                         WriteLine(">> There is no such page"); // to change message!!!
                         continue;
                     }
-                    // smthn = galaxyRemoteControl.GetPage(n);
+                    ListPlanet planetList = galaxyRemoteControl.GetPage(n);
+                    PrintListInfo(planetList);
                 }
                 else if (input.StartsWith("export"))
                 {
-                    WriteLine("Скоро буде.(2)");
+                    string mayBeV = input.Split()[1];
+                    int valueX = 0;
+                    if(!int.TryParse(mayBeV, out valueX))
+                    {
+                        WriteLine(">> incorrect input.");
+                        continue;
+                    }
+                    ListPlanet list = galaxyRemoteControl.GetExport(valueX);
+                    string path = "./export.csv";
+                    WriteAllPlanets(path, list);
+                    // count lines in csv !!!!
+                    // WriteLine("File name: 'export.csv'; num of lines: {}");
                 }
                 else if(input == "exit")
                 {
@@ -323,6 +386,35 @@ namespace lab2
             }
         }
 
+        static void WriteAllPlanets(string path, ListPlanet planets)
+        {
+            StreamWriter sw = new StreamWriter(path);
+            string s = ""; 
+            int i = 0;
+            while (true)
+            {
+                if (i == planets.Count)
+                {
+                    break;
+                }
+                s = PlanetToCSV (planets[i]);
+                sw.WriteLine(s);
+                i++;
+            }
+            sw.Close();
+        }
+
+        static string PlanetToCSV (Planet p1)
+        {
+            string[] colsInRow = new string[4];
+            colsInRow[0] = Convert.ToString(p1.id);
+            colsInRow[1] = p1.name;
+            colsInRow[2] = Convert.ToString(p1.size);
+            colsInRow[3] = p1.color;
+            string csvRow = String.Join(',', colsInRow);
+            return csvRow;
+        }
+
         static Planet CSVRowToPlanet (string s)
         {
             string[] colsInRow = s.Split(',');
@@ -331,11 +423,19 @@ namespace lab2
                 return null;
             }
             Planet p1 = new Planet();
-            p1.id = int.Parse(colsInRow[0]);
+            p1.id = int.Parse(colsInRow[0]); // try parse and error
             p1.name = colsInRow[1];
-            p1.size = double.Parse(colsInRow[2]);
+            p1.size = double.Parse(colsInRow[2]); // try parse and error
             p1.color = colsInRow[3];
             return p1;
+        }
+
+        static void PrintListInfo(ListPlanet list)
+        {
+            for(int i = 0; i < list.Count; i++)
+            {
+                WriteLine(list[i].ToString());
+            }
         }
     }
 }
