@@ -203,63 +203,52 @@ namespace lab2
 
         public ListPlanet GetPage(int pageNumber) 
         {
-            int count = 1;
-            bool readyRead = false;
             ListPlanet plList = new ListPlanet();
             //
             connection.Open();
             //
             SqliteCommand command = connection.CreateCommand();
-            command.CommandText = @"SELECT * FROM planets";
-            
+            command.CommandText = 
+            @"
+                SELECT * FROM planets LIMIT 10 OFFSET ($pageN-1)*10;
+            ";
+            command.Parameters.AddWithValue("$pageN", pageNumber);
+
             SqliteDataReader reader = command.ExecuteReader();
 
             while (reader.Read())
             {     
-                if(count == ((pageNumber-1)*10 + 1))
-                {
-                    readyRead = true;
-                } 
-                if(readyRead)
-                {
-                    if(count <= pageNumber*10)
-                    {
-                        Planet p = new Planet();
-                        p.id = int.Parse(reader.GetString(0));
-                        p.name = reader.GetString(1);
-                        p.size = Convert.ToDouble(reader.GetString(2));
-                        p.color = reader.GetString(3);
-                        plList.Add(p);
-                    }
-                }
-                count++;             
+                Planet p = new Planet();
+                p.id = int.Parse(reader.GetString(0));
+                p.name = reader.GetString(1);
+                p.size = Convert.ToDouble(reader.GetString(2));
+                p.color = reader.GetString(3);
+                plList.Add(p);
             }
             reader.Close();
             //
             connection.Close();
             return plList;
         }
-    
+
         public ListPlanet GetExport(int valueX) 
         {
             ListPlanet plList = new ListPlanet();
             connection.Open();
             SqliteCommand command = connection.CreateCommand();
-            command.CommandText = @"SELECT * FROM planets";
-            
+            command.CommandText = @"SELECT * FROM planets WHERE id > $valueX";
+            command.Parameters.AddWithValue("$valueX", valueX);
+
             SqliteDataReader reader = command.ExecuteReader();
 
             while (reader.Read())
             {
-                if(int.Parse(reader.GetString(0)) > valueX)
-                {
-                    Planet p = new Planet();
-                    p.id = int.Parse(reader.GetString(0));
-                    p.name = reader.GetString(1);
-                    p.size = Convert.ToDouble(reader.GetString(2));
-                    p.color = reader.GetString(3);
-                    plList.Add(p);
-                }
+                Planet p = new Planet();
+                p.id = int.Parse(reader.GetString(0));
+                p.name = reader.GetString(1);
+                p.size = Convert.ToDouble(reader.GetString(2));
+                p.color = reader.GetString(3);
+                plList.Add(p);
             }
             reader.Close();
             connection.Close();
@@ -282,74 +271,23 @@ namespace lab2
                 string input = ReadLine();
                 if(input.StartsWith("getById"))
                 {
-                    if(input.Split().Length != 2)
+                    if(GetByIdCommand(input, galaxyRemoteControl) == 0)
                     {
-                        WriteLine(">> incorrect input. (some parts of the command are missed)");
                         continue;
-                    }
-                    string mayBeId = input.Split()[1];
-                    int id = 0;
-                    if(!int.TryParse(mayBeId, out id))
-                    {
-                        WriteLine(">> incorrect input.");
-                        continue;
-                    }
-                    Planet p = galaxyRemoteControl.GetById(id);
-                    if(p == null)
-                    {
-                        WriteLine("PLanet NOT found.");
-                    }
-                    else
-                    {
-                        WriteLine("PLanet found:\n" + p.ToString());
                     }
                 }
                 else if (input.StartsWith("deleteById"))
                 {
-                    if(input.Split().Length != 2)
+                    if(DeleteByIdCommand(input, galaxyRemoteControl) == 0)
                     {
-                        WriteLine(">> incorrect input. (some parts of the command are missed)");
                         continue;
-                    }
-                    string mayBeId = input.Split()[1];
-                    int id = 0;
-                    if(!int.TryParse(mayBeId, out id))
-                    {
-                        WriteLine(">> incorrect input.");
-                        continue;
-                    }
-                    int nChanged = galaxyRemoteControl.DeleteById(id);
-                    if (nChanged == 0)
-                    {
-                        WriteLine(">> Planet NOT deleted.");
-                    }
-                    else 
-                    {
-                        WriteLine(">> Planet deleted.");
                     }
                 }
                 else if (input.StartsWith("insert"))
                 {
-                    if(input.Split().Length != 2)
+                    if(InsertCommand(input, galaxyRemoteControl) == 0)
                     {
-                        WriteLine(">> incorrect input. (some parts of the command are missed)"); 
                         continue;
-                    }
-                    string csvRow = input.Split()[1];
-                    Planet p = CSVRowToPlanet(csvRow);
-                    if(p == null)
-                    {
-                        WriteLine(">> incorrect input.");
-                        continue;
-                    }
-                    int newId = galaxyRemoteControl.Insert(p);
-                    if (newId == 0)
-                    {
-                        WriteLine(">> Planet NOT added.");
-                    }
-                    else 
-                    {
-                        WriteLine(">> Planet added. New id: " + newId);
                     }
                 }
                 else if (input == "getTotalPages")
@@ -359,45 +297,17 @@ namespace lab2
                 }
                 else if (input.StartsWith("getPage"))
                 {
-                    if(input.Split().Length != 2)
+                    if(GetPageCommand(input, galaxyRemoteControl) == 0)
                     {
-                        WriteLine(">> incorrect input. (some parts of the command are missed)");
                         continue;
                     }
-                    string mayBePageN = input.Split()[1];
-                    int n = 0;
-                    if(!int.TryParse(mayBePageN, out n))
-                    {
-                        WriteLine(">> incorrect input.");
-                        continue;
-                    }
-                    if(n <= 0 || n > galaxyRemoteControl.GetTotalPages())
-                    {
-                        WriteLine(">> There is no such page");
-                        continue;
-                    }
-                    ListPlanet planetList = galaxyRemoteControl.GetPage(n);
-                    PrintListInfo(planetList);
                 }
                 else if (input.StartsWith("export"))
                 {
-                    if(input.Split().Length != 2)
+                    if(ExportCommand(input, galaxyRemoteControl) == 0)
                     {
-                        WriteLine(">> incorrect input. (some parts of the command are missed)");
                         continue;
                     }
-                    string mayBeV = input.Split()[1];
-                    int valueX = 0;
-                    if(!int.TryParse(mayBeV, out valueX))
-                    {
-                        WriteLine(">> incorrect input.");
-                        continue;
-                    }
-                    ListPlanet list = galaxyRemoteControl.GetExport(valueX);
-                    string path = "./export.csv";
-                    WriteAllPlanets(path, list);
-                    long lines = CountCsvLines(path);
-                    WriteLine($"File name: 'export.csv'; number of lines: {lines}");
                 }
                 else if(input == "exit")
                 {
@@ -410,22 +320,130 @@ namespace lab2
             }
         }
 
-        static long CountCsvLines(string path)
+        static int GetByIdCommand(string input, PlanetRepository grc)
         {
-            long count = 0;
-            StreamReader sr = new StreamReader(path);
-            string s = "";
-            while (true)
+            if(input.Split().Length != 2)
             {
-                s = sr.ReadLine();
-                if (s == null)
-                {
-                    break;
-                }
-                count++;
+                WriteLine(">> incorrect input. (some parts of the command are missed)");
+                return 0;
             }
-            sr.Close();
-            return count;
+            string mayBeId = input.Split()[1];
+            int id = 0;
+            if(!int.TryParse(mayBeId, out id))
+            {
+                WriteLine(">> incorrect input.");
+                return 0;
+            }
+            Planet p = grc.GetById(id);
+            if(p == null)
+            {
+                WriteLine("PLanet NOT found.");
+            }
+            else
+            {
+                WriteLine("PLanet found:\n" + p.ToString());
+            }
+            return 1;
+        }
+
+        static int DeleteByIdCommand(string input, PlanetRepository grc)
+        {
+            if(input.Split().Length != 2)
+            {
+                WriteLine(">> incorrect input. (some parts of the command are missed)");
+                return 0;
+            }
+            string mayBeId = input.Split()[1];
+            int id = 0;
+            if(!int.TryParse(mayBeId, out id))
+            {
+                WriteLine(">> incorrect input.");
+                return 0;
+            }
+            int nChanged = grc.DeleteById(id);
+            if (nChanged == 0)
+            {
+                WriteLine(">> Planet NOT deleted.");
+            }
+            else 
+            {
+                WriteLine(">> Planet deleted.");
+            }
+            return 1;
+            throw new NotImplementedException();
+        }
+
+        static int InsertCommand(string input, PlanetRepository grc)
+        {
+            if(input.Split().Length != 2)
+            {
+                WriteLine(">> incorrect input. (some parts of the command are missed)"); 
+                return 0;
+            }
+            string csvRow = input.Split()[1];
+            Planet p = CSVRowToPlanet(csvRow);
+            if(p == null)
+            {
+                WriteLine(">> incorrect input.");
+                return 0;
+            }
+            int newId = grc.Insert(p);
+            if (newId == 0)
+            {
+                WriteLine(">> Planet NOT added.");
+            }
+            else 
+            {
+                WriteLine(">> Planet added. New id: " + newId);
+            }
+            return 1;
+        }
+
+        static int GetPageCommand(string input, PlanetRepository grc)
+        {
+            if(input.Split().Length != 2)
+            {
+                WriteLine(">> incorrect input. (some parts of the command are missed)");
+                return 0;
+            }
+            string mayBePageN = input.Split()[1];
+            int n = 0;
+            if(!int.TryParse(mayBePageN, out n))
+            {
+                WriteLine(">> incorrect input.");
+                return 0;
+            }
+            if(n <= 0 || n > grc.GetTotalPages())
+            {
+                WriteLine(">> There is no such page");
+                return 0;
+            }
+            //
+            ListPlanet planetList = grc.GetPage(n);
+            PrintListInfo(planetList);
+            return 1;
+        }
+
+        static int ExportCommand(string input, PlanetRepository grc)
+        {
+            if(input.Split().Length != 2)
+            {
+                WriteLine(">> incorrect input. (some parts of the command are missed)");
+                return 0;
+            }
+            string mayBeV = input.Split()[1];
+            int valueX = 0;
+            if(!int.TryParse(mayBeV, out valueX))
+            {
+                WriteLine(">> incorrect input.");
+                return 0;
+            }
+            //
+            ListPlanet list = grc.GetExport(valueX);
+            string path = "./export.csv";
+            WriteAllPlanets(path, list);
+            WriteLine($"File name: 'export.csv'; number of lines: {list.Count}");
+            return 1;
         }
 
         static void WriteAllPlanets(string path, ListPlanet planets)
