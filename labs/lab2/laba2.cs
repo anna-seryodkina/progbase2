@@ -271,24 +271,15 @@ namespace lab2
                 string input = ReadLine();
                 if(input.StartsWith("getById"))
                 {
-                    if(GetByIdCommand(input, galaxyRemoteControl) == 0)
-                    {
-                        continue;
-                    }
+                    GetByIdCommand(input, galaxyRemoteControl);
                 }
                 else if (input.StartsWith("deleteById"))
                 {
-                    if(DeleteByIdCommand(input, galaxyRemoteControl) == 0)
-                    {
-                        continue;
-                    }
+                    DeleteByIdCommand(input, galaxyRemoteControl);
                 }
                 else if (input.StartsWith("insert"))
                 {
-                    if(InsertCommand(input, galaxyRemoteControl) == 0)
-                    {
-                        continue;
-                    }
+                    InsertCommand(input, galaxyRemoteControl);
                 }
                 else if (input == "getTotalPages")
                 {
@@ -297,17 +288,11 @@ namespace lab2
                 }
                 else if (input.StartsWith("getPage"))
                 {
-                    if(GetPageCommand(input, galaxyRemoteControl) == 0)
-                    {
-                        continue;
-                    }
+                    GetPageCommand(input, galaxyRemoteControl);
                 }
                 else if (input.StartsWith("export"))
                 {
-                    if(ExportCommand(input, galaxyRemoteControl) == 0)
-                    {
-                        continue;
-                    }
+                    ExportCommand(input, galaxyRemoteControl);
                 }
                 else if(input == "exit")
                 {
@@ -320,19 +305,19 @@ namespace lab2
             }
         }
 
-        static int GetByIdCommand(string input, PlanetRepository grc)
+        static void GetByIdCommand(string input, PlanetRepository grc)
         {
             if(input.Split().Length != 2)
             {
                 WriteLine(">> incorrect input. (some parts of the command are missed)");
-                return 0;
+                return;
             }
             string mayBeId = input.Split()[1];
             int id = 0;
             if(!int.TryParse(mayBeId, out id))
             {
                 WriteLine(">> incorrect input.");
-                return 0;
+                return;
             }
             Planet p = grc.GetById(id);
             if(p == null)
@@ -343,22 +328,21 @@ namespace lab2
             {
                 WriteLine("PLanet found:\n" + p.ToString());
             }
-            return 1;
         }
 
-        static int DeleteByIdCommand(string input, PlanetRepository grc)
+        static void DeleteByIdCommand(string input, PlanetRepository grc)
         {
             if(input.Split().Length != 2)
             {
                 WriteLine(">> incorrect input. (some parts of the command are missed)");
-                return 0;
+                return;
             }
             string mayBeId = input.Split()[1];
             int id = 0;
             if(!int.TryParse(mayBeId, out id))
             {
                 WriteLine(">> incorrect input.");
-                return 0;
+                return;
             }
             int nChanged = grc.DeleteById(id);
             if (nChanged == 0)
@@ -369,23 +353,21 @@ namespace lab2
             {
                 WriteLine(">> Planet deleted.");
             }
-            return 1;
-            throw new NotImplementedException();
         }
 
-        static int InsertCommand(string input, PlanetRepository grc)
+        static void InsertCommand(string input, PlanetRepository grc)
         {
             if(input.Split().Length != 2)
             {
                 WriteLine(">> incorrect input. (some parts of the command are missed)"); 
-                return 0;
+                return;
             }
             string csvRow = input.Split()[1];
             Planet p = CSVRowToPlanet(csvRow);
             if(p == null)
             {
                 WriteLine(">> incorrect input.");
-                return 0;
+                return;
             }
             int newId = grc.Insert(p);
             if (newId == 0)
@@ -396,54 +378,51 @@ namespace lab2
             {
                 WriteLine(">> Planet added. New id: " + newId);
             }
-            return 1;
         }
 
-        static int GetPageCommand(string input, PlanetRepository grc)
+        static void GetPageCommand(string input, PlanetRepository grc)
         {
             if(input.Split().Length != 2)
             {
                 WriteLine(">> incorrect input. (some parts of the command are missed)");
-                return 0;
+                return;
             }
             string mayBePageN = input.Split()[1];
             int n = 0;
             if(!int.TryParse(mayBePageN, out n))
             {
                 WriteLine(">> incorrect input.");
-                return 0;
+                return;
             }
             if(n <= 0 || n > grc.GetTotalPages())
             {
-                WriteLine(">> There is no such page");
-                return 0;
+                WriteLine(">> There is no such page.");
+                return;
             }
             //
             ListPlanet planetList = grc.GetPage(n);
             PrintListInfo(planetList);
-            return 1;
         }
 
-        static int ExportCommand(string input, PlanetRepository grc)
+        static void ExportCommand(string input, PlanetRepository grc)
         {
             if(input.Split().Length != 2)
             {
                 WriteLine(">> incorrect input. (some parts of the command are missed)");
-                return 0;
+                return;
             }
             string mayBeV = input.Split()[1];
             int valueX = 0;
             if(!int.TryParse(mayBeV, out valueX))
             {
                 WriteLine(">> incorrect input.");
-                return 0;
+                return;
             }
             //
             ListPlanet list = grc.GetExport(valueX);
             string path = "./export.csv";
             WriteAllPlanets(path, list);
             WriteLine($"File name: 'export.csv'; number of lines: {list.Count}");
-            return 1;
         }
 
         static void WriteAllPlanets(string path, ListPlanet planets)
