@@ -4,9 +4,8 @@ namespace lab3
 {
     static class ReadWrite
     {
-        public static ISetInt ReadSet(string filePath)
+        public static ISetInt ReadSet(string filePath, ISetInt set)
         {
-            ISetInt set = new ArraySetInt();
             StreamReader sr = new StreamReader(filePath);
             string s = "";
             while (true)
@@ -17,7 +16,7 @@ namespace lab3
                     break;
                 }
                 int number = int.Parse(s);
-                set.Add(number);
+                set.Add(number); 
             }
             sr.Close();
             return set;

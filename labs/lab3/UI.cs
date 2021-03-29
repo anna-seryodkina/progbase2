@@ -24,57 +24,127 @@ namespace lab3
                 //
                 if(input.Contains("add"))
                 {
-                    ProcessAdd(input, a, b, logger);
+                    try
+                    {
+                        ProcessAdd(input, a, b, logger);
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.LogError(ex.Message);
+                    }
                 }
                 else if(input.Contains("contains"))
                 {
-                    ProcessContains(input, a, b, logger);
+                    try
+                    {
+                        ProcessContains(input, a, b, logger);
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.LogError(ex.Message);
+                    }
                 }
                 else if(input.Contains("remove"))
                 {
-                    ProcessRemove(input, a, b, logger);
+                    try
+                    {
+                        ProcessRemove(input, a, b, logger);
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.LogError(ex.Message);
+                    }
                 }
                 else if(input.Contains("clear"))
                 {
-                    ProcessClear(input, a, b, logger);
+                    try
+                    {
+                        ProcessClear(input, a, b, logger);
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.LogError(ex.Message);
+                    }
                 }
                 else if(input.Contains("log"))
                 {
-                    ProcessLog(input, a, b, logger);
+                    try
+                    {
+                        ProcessLog(input, a, b, logger);
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.LogError(ex.Message);
+                    }
                 }
                 else if(input.Contains("count"))
                 {
-                    ProcessCount(input, a, b, logger);
+                    try
+                    {
+                        ProcessCount(input, a, b, logger);
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.LogError(ex.Message);
+                    }
                 }
-                else if(input.Contains("read"))
+                else if(input.Contains("read")) 
                 {
-                    ProcessRead(input, a, b, logger);
+                    try
+                    {
+                        ProcessRead(input, a, b, logger);
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.LogError(ex.Message);
+                    }
                 }
                 else if(input.Contains("write"))
                 {
-                    ProcessWrite(input, a, b, logger);
+                    try
+                    {
+                        ProcessWrite(input, a, b, logger);
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.LogError(ex.Message);
+                    }
                 }
                 else if(input == "Overlaps")
                 {
-                    ProcessOverlaps(input, a, b, logger);
+                    try
+                    {
+                        bool toBeOrNotToBe = a.Overlaps(b);
+                        logger.Log($"{toBeOrNotToBe}.");
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.LogError(ex.Message);
+                    }
                 }
                 else if (input == "SymmetricExceptWith")
                 {
-                    ProcessSymmetricExceptWith(input, a, b, logger);
+                    try
+                    {
+                        ProcessSymmetricExceptWith(input, a, b, logger);
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.LogError(ex.Message);
+                    }
                 }
                 else
                 {
                     logger.LogError("incorrect input.");
                 }
-                break;
             }
         }
 
-        static void ProcessAdd(string input, ISetInt a, ISetInt b, ILogger logger) // add try catch ???
+        static void ProcessAdd(string input, ISetInt a, ISetInt b, ILogger logger)
         {
             string[] inputParts = input.Split();
             int number;
-            if(inputParts[0] != "a" || inputParts[0] != "b")
+            if(inputParts[0] != "a" && inputParts[0] != "b")
             {
                 logger.LogError("incorrect set.");
             }
@@ -84,13 +154,23 @@ namespace lab3
             }
             else
             {
+                bool added;
                 if(inputParts[0] == "a")
                 {
-                    logger.Log($"add to set a. result: {a.Add(number).ToString()}");
+                    added = a.Add(number);
                 }
                 else
                 {
-                    logger.Log($"add to set b. result: {b.Add(number).ToString()}");
+                    added = b.Add(number);
+                }
+                //
+                if(added)
+                {
+                    logger.Log($"[{number}] was added to the set.");
+                }
+                else
+                {
+                    logger.Log($"[{number}] NOT added.");
                 }
             }
         }
@@ -99,7 +179,7 @@ namespace lab3
         {
             string[] inputParts = input.Split();
             int number;
-            if(inputParts[0] != "a" || inputParts[0] != "b")
+            if(inputParts[0] != "a" && inputParts[0] != "b")
             {
                 logger.LogError("incorrect set.");
             }
@@ -109,13 +189,23 @@ namespace lab3
             }
             else
             {
+                bool contains;
                 if(inputParts[0] == "a")
                 {
-                    logger.Log($"search in A. result: {a.Contains(number)}");
+                    contains = a.Contains(number);
                 }
                 else
                 {
-                    logger.Log($"search in B. result: {b.Contains(number)}");
+                    contains = b.Contains(number);
+                }
+                //
+                if(contains)
+                {
+                    logger.Log($"set '{inputParts[0]}' contains [{number}].");
+                }
+                else
+                {
+                    logger.Log($"[{number}] NOT found.");
                 }
             }
         }
@@ -124,7 +214,7 @@ namespace lab3
         {
             string[] inputParts = input.Split();
             int number;
-            if(inputParts[0] != "a" || inputParts[0] != "b")
+            if(inputParts[0] != "a" && inputParts[0] != "b")
             {
                 logger.LogError("incorrect set.");
             }
@@ -134,13 +224,23 @@ namespace lab3
             }
             else
             {
+                bool removed;
                 if(inputParts[0] == "a")
                 {
-                    logger.Log($"remove from A. result: {a.Remove(number)}");
+                    removed = a.Remove(number);
                 }
                 else
                 {
-                    logger.Log($"remove from B. result: {b.Remove(number)}");
+                    removed = b.Remove(number);
+                }
+                //
+                if(removed)
+                {
+                    logger.Log($"[{number}] was removed from set '{inputParts[0]}'.");
+                }
+                else
+                {
+                    logger.Log($"[{number}] NOT removed.");
                 }
             }
         }
@@ -148,7 +248,7 @@ namespace lab3
         static void ProcessClear(string input, ISetInt a, ISetInt b, ILogger logger)
         {
             string[] inputParts = input.Split();
-            if(inputParts[0] != "a" || inputParts[0] != "b")
+            if(inputParts[0] != "a" && inputParts[0] != "b")
             {
                 logger.LogError("incorrect set.");
             }
@@ -168,7 +268,7 @@ namespace lab3
         static void ProcessLog(string input, ISetInt a, ISetInt b, ILogger logger)
         {
             string[] inputParts = input.Split();
-            if(inputParts[0] != "a" || inputParts[0] != "b")
+            if(inputParts[0] != "a" && inputParts[0] != "b")
             {
                 logger.LogError("incorrect set.");
             }
@@ -185,20 +285,14 @@ namespace lab3
                     array = new int[b.GetCount];
                     b.CopyTo(array);
                 }
-                StringBuilder sb = new StringBuilder();
-                for(int i = 0; i < array.Length; i++)
-                {
-                    sb.Append(array[i]);
-                    sb.Append(" ");
-                }
-                logger.Log(sb.ToString());
+                logger.Log(CreateOutputString(array));
             }
         }
 
         static void ProcessCount(string input, ISetInt a, ISetInt b, ILogger logger)
         {
             string[] inputParts = input.Split();
-            if(inputParts[0] != "a" || inputParts[0] != "b")
+            if(inputParts[0] != "a" && inputParts[0] != "b")
             {
                 logger.LogError("incorrect set.");
             }
@@ -218,7 +312,7 @@ namespace lab3
         static void ProcessRead(string input, ISetInt a, ISetInt b, ILogger logger)
         {
             string[] inputParts = input.Split();
-            if(inputParts[0] != "a" || inputParts[0] != "b")
+            if(inputParts[0] != "a" && inputParts[0] != "b")
             {
                 logger.LogError("incorrect set.");
             }
@@ -227,11 +321,11 @@ namespace lab3
                 string path = inputParts[2];
                 if(inputParts[0] == "a")
                 {
-                    a = ReadWrite.ReadSet(path);
+                    a = ReadWrite.ReadSet(path, a);
                 }
                 else
                 {
-                    b = ReadWrite.ReadSet(path);
+                    b = ReadWrite.ReadSet(path, b);
                 }
             }
         }
@@ -239,7 +333,7 @@ namespace lab3
         static void ProcessWrite(string input, ISetInt a, ISetInt b, ILogger logger)
         {
             string[] inputParts = input.Split();
-            if(inputParts[0] != "a" || inputParts[0] != "b")
+            if(inputParts[0] != "a" && inputParts[0] != "b")
             {
                 logger.LogError("incorrect set.");
             }
@@ -257,15 +351,22 @@ namespace lab3
             }
         }
 
-        static void ProcessOverlaps (string input, ISetInt a, ISetInt b, ILogger logger)
+        static string CreateOutputString(int[] array)
         {
-            logger.Log($"overlaps happened here. result: {a.Overlaps(b)} :D");
+            StringBuilder sb = new StringBuilder();
+            for(int i = 0; i < array.Length; i++)
+            {
+                sb.Append($"[{array[i]}] ");
+            }
+            return sb.ToString();
         }
 
         static void ProcessSymmetricExceptWith (string input, ISetInt a, ISetInt b, ILogger logger)
         {
             a.SymmetricExceptWith(b);
-            WriteLine("SymmetricExceptWith happened here. :D");
+            int[] array = new int[a.GetCount];
+            a.CopyTo(array);
+            logger.Log(CreateOutputString(array));
         }
 
     }

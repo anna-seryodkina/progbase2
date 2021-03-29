@@ -6,11 +6,13 @@ namespace lab3
     {
         private int[] _items;
         private int _size;
+
         public ArraySetInt()
         {
             _items = new int[16];
             _size = 0;
         }
+        
         public int GetCount
         {
             get

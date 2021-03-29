@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using static System.Console;
 
 namespace lab3
@@ -9,19 +8,25 @@ namespace lab3
         static void Main(string[] args)
         {
             ILogger logger;
-            if(args[0] == "file")
+            if(args.Length == 0 || args[0] == "console")
             {
-                if(args[1] == null || args[2] == null)
+                logger = new ConsoleLogger ();
+            }
+            else if(args[0] == "file")
+            {
+                if(args.Length < 3)
                 {
-                    WriteLine("> file path is required.");
+                    WriteLine(">> file path is required.");
                     return;
                 }
                 logger = new PlainFileLogger(args[1], args[2]);
             }
             else
             {
-                logger = new ConsoleLogger ();
+                WriteLine(">> incorect args.");
+                return;
             }
+            //
             UI.ProcessSets(logger);
         }
     }

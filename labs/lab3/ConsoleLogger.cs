@@ -6,12 +6,12 @@ namespace lab3
     {
         public void Log(string message)
         {
-            Console.WriteLine(message);
+            Console.WriteLine($">> {message}");
         }
 
         public void LogError(string errorMessage)
         {
-            Console.WriteLine($"error: {errorMessage}");
+            Console.WriteLine($">> error: {errorMessage}");
         }
     }
 }

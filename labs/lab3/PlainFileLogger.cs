@@ -15,18 +15,12 @@ namespace lab3
 
         public void Log(string message)
         {
-            StreamWriter sw = new StreamWriter(this.filePathMessage);
-            sw.WriteLine(message);
-            sw.WriteLine();
-            sw.Close();
+            File.AppendAllLines(this.filePathMessage, new string[] {message});
         }
 
         public void LogError(string errorMessage)
         {
-            StreamWriter sw = new StreamWriter(this.filePathError);
-            sw.WriteLine(errorMessage);
-            sw.WriteLine();
-            sw.Close();
+            File.AppendAllLines(this.filePathError, new string[] {errorMessage});
         }
     }
 }
