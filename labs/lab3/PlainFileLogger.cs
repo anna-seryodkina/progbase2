@@ -15,12 +15,12 @@ namespace lab3
 
         public void Log(string message)
         {
-            File.AppendAllLines(this.filePathMessage, new string[] {message});
+            File.AppendAllLines(this.filePathMessage, new string[] {message, ""});
         }
 
         public void LogError(string errorMessage)
         {
-            File.AppendAllLines(this.filePathError, new string[] {errorMessage});
+            File.AppendAllLines(this.filePathError, new string[] {errorMessage, ""});
         }
     }
 }
