@@ -19,7 +19,15 @@ namespace ConsoleProject
                 {
                     break;
                 }
-                root = ProcessCommand(command, root);
+
+                try
+                {
+                    root = ProcessCommand(command, root);
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
             }
         }
 
@@ -48,6 +56,10 @@ namespace ConsoleProject
             {
                 throw new Exception($">> invalid page number: {commandParts[1]}.");
             }
+            if(pageNum <= 0)
+            {
+                throw new Exception(">> page number should be positive.");
+            }
             int pageSize = 10;
             Console.WriteLine($">> page size: {pageSize}");
             //
@@ -72,7 +84,7 @@ namespace ConsoleProject
         {
             if(!System.IO.File.Exists(filename))
             {
-                throw new Exception($"File does not exist: {filename}");
+                throw new Exception($">> File does not exist: {filename}");
             }
         }
 
@@ -98,10 +110,13 @@ namespace ConsoleProject
             string maybeN = commandParts[1];
             if(!int.TryParse(maybeN, out n))
             {
-                throw new Exception(">> incorrect input. (N)");
+                throw new Exception($">> invalid N: {commandParts[1]}");
+            }
+            if(n <= 0)
+            {
+                throw new Exception($">> N should be positive.");
             }
             string filename = commandParts[2];
-            FileExists(filename);
             //
             List<Course> nCourses = XmlDataProcessor.GetFirstN(root, n);
             Root nRoot = new Root()
@@ -127,7 +142,7 @@ namespace ConsoleProject
         {
             foreach(string item in list)
             {
-                Console.WriteLine($"[{item}]");
+                Console.WriteLine($"[ {item} ]");
             }
         }
 
@@ -135,7 +150,13 @@ namespace ConsoleProject
         {
             foreach(Course item in list)
             {
-                Console.WriteLine($"[{item}]"); // TO DO: normal output
+                Console.WriteLine();
+                Console.WriteLine($"[{item.regNum}] <{item.subj}> <{item.course}> <{item.sect}>");
+                Console.WriteLine($"'{item.title}'");
+                Console.WriteLine($"units: {item.units}\ninstructor: {item.instructor}\ndays: {item.days}");
+                Console.WriteLine($"START: {item.time.startTime}. END: {item.time.endTime}");
+                Console.WriteLine($"PLACE: {item.place.building}, {item.place.room}");
+                Console.WriteLine();
             }
         }
 
@@ -159,7 +180,6 @@ namespace ConsoleProject
                 throw new Exception(">> incorrect input.");
             }
             string filename = commandParts[1];
-            FileExists(filename);
             PlotMaker.CreateGraph(root, filename);
         }
 
@@ -199,8 +219,7 @@ namespace ConsoleProject
             }
             else
             {
-                throw new Exception($">> not supported command: [{command}]");
-                // OR: Console.WriteLine($">> not supported command: {command}"); return;
+                throw new Exception($">> not supported command: {command}");
             }
             return root;
         }

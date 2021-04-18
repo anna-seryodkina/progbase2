@@ -45,7 +45,6 @@ namespace ConsoleProject
 
         public static List<string> GetUniqueSubjList(Root root)
         {
-            // Dictionary<string, Course> subjects = new Dictionary<string, Course>();
             HashSet<string> subjects = new HashSet<string>();
             List<string> subjList = new List<string>();
             foreach(Course course in root.courses) 
@@ -60,11 +59,11 @@ namespace ConsoleProject
 
         public static List<string> GetUniqueInstructorsList(Root root)
         {
-            Dictionary<string, Course> dictionary = new Dictionary<string, Course>();
+            HashSet<string> set = new HashSet<string>();
             List<string> instructorsList = new List<string>();
             foreach(Course course in root.courses)
             {
-                if(dictionary.TryAdd(course.instructor, course))
+                if(set.Add(course.instructor))
                 {
                     instructorsList.Add(course.instructor);
                 }
