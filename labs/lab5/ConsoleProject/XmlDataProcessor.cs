@@ -45,11 +45,12 @@ namespace ConsoleProject
 
         public static List<string> GetUniqueSubjList(Root root)
         {
-            Dictionary<string, Course> subjects = new Dictionary<string, Course>();
+            // Dictionary<string, Course> subjects = new Dictionary<string, Course>();
+            HashSet<string> subjects = new HashSet<string>();
             List<string> subjList = new List<string>();
-            foreach(Course course in root.courses)
+            foreach(Course course in root.courses) 
             {
-                if(subjects.TryAdd(course.subj, course))
+                if(subjects.Add(course.subj))
                 {
                     subjList.Add(course.subj);
                 }
@@ -82,6 +83,19 @@ namespace ConsoleProject
                 }
             }
             return titlesList;
+        }
+
+        public static double CountSubjUnits(Root root, string subj)
+        {
+            double units = 0;
+            foreach(Course course in root.courses)
+            {
+                if(course.subj == subj)
+                {
+                    units += course.units;
+                }
+            }
+            return units;
         }
     }
 }

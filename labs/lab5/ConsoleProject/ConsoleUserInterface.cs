@@ -9,6 +9,7 @@ namespace ConsoleProject
     {
         public static void Run()
         {
+            Root root = new Root();
             while(true)
             {
                 Console.Write("> ");
@@ -18,7 +19,7 @@ namespace ConsoleProject
                 {
                     break;
                 }
-                ProcessCommand(command);
+                root = ProcessCommand(command, root);
             }
         }
 
@@ -32,8 +33,7 @@ namespace ConsoleProject
             string filename = commandParts[1];
             FileExists(filename);
             //
-            Root root = MySerializer.Deserialize(filename);
-            return root;
+            return MySerializer.Deserialize(filename);
         }
 
         private static void ProcessPrint(string command, Root root)
@@ -84,7 +84,6 @@ namespace ConsoleProject
                 throw new Exception(">> incorrect input.");
             }
             string filename = commandParts[1];
-            FileExists(filename);
             MySerializer.Serialize(filename, root);
         }
 
@@ -152,7 +151,7 @@ namespace ConsoleProject
             PrintList(titlesList);
         }
 
-        private static void ProcessImage(string command)
+        private static void ProcessImage(string command, Root root)
         {
             string[] commandParts = command.Split();
             if(commandParts.Length != 2)
@@ -161,12 +160,11 @@ namespace ConsoleProject
             }
             string filename = commandParts[1];
             FileExists(filename);
-            // створити і зберегти зображення з графіком за варіантом у файл
+            PlotMaker.CreateGraph(root, filename);
         }
 
-        private static void ProcessCommand(string command)
+        private static Root ProcessCommand(string command, Root root)
         {
-            Root root = new Root();
             if(command.StartsWith("load"))
             {
                 root = ProcessLoad(command);
@@ -197,49 +195,14 @@ namespace ConsoleProject
             }
             else if(command.StartsWith("image"))
             {
-                ProcessImage(command);
+                ProcessImage(command, root);
             }
             else
             {
                 throw new Exception($">> not supported command: [{command}]");
                 // OR: Console.WriteLine($">> not supported command: {command}"); return;
             }
+            return root;
         }
-    }
-
-    [XmlRoot("root")]
-    public class Root
-    {
-        [XmlElement("course")]
-        public List<Course> courses;
-    }
-
-    public class Course
-    {
-        [XmlElement("reg_num")]
-        public string regNum;
-        public string subj;
-        public string crse;
-        public string sect;
-        public string title;
-        public double units;
-        public string instructor;
-        public string days;
-        public Time time;
-        public Place place;
-    }
-
-    public class Place
-    {
-        public string building;
-        public string room;
-    }
-
-    public class Time
-    {
-        [XmlElement("start_time")]
-        public string startTime;
-        [XmlElement("end_time")]
-        public string endTime;
     }
 }
