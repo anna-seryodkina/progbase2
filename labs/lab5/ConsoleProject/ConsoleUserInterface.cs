@@ -22,7 +22,7 @@ namespace ConsoleProject
 
                 try
                 {
-                    root = ProcessCommand(command, root);
+                    ProcessCommand(command, ref root);
                 }
                 catch(Exception ex)
                 {
@@ -183,7 +183,7 @@ namespace ConsoleProject
             PlotMaker.CreateGraph(root, filename);
         }
 
-        private static Root ProcessCommand(string command, Root root)
+        private static void ProcessCommand(string command, ref Root root)
         {
             if(command.StartsWith("load"))
             {
@@ -221,7 +221,6 @@ namespace ConsoleProject
             {
                 throw new Exception($">> not supported command: {command}");
             }
-            return root;
         }
     }
 }
