@@ -12,7 +12,7 @@ namespace ConsoleProject
             Root root = new Root();
             while(true)
             {
-                Console.Write("> ");
+                Console.Write("> enter command: ");
                 string command = Console.ReadLine();
                 //
                 if(command == "exit" || command == "")
