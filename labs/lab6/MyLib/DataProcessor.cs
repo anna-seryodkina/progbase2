@@ -70,7 +70,7 @@ namespace MyLib
             // connection.Close();
         }
 
-        public long GetTotalPages() // page size???
+        public long GetTotalPages()
         {
             connection.Open();
 
@@ -84,18 +84,18 @@ namespace MyLib
             connection.Close();
 
             long pages = 0;
-            if(numOfRows%10 != 0)
+            if(numOfRows%pageSize != 0)
             {
-                pages = numOfRows/10 + 1;
+                pages = numOfRows/pageSize + 1;
             }
             else
             {
-                pages = numOfRows/10;
+                pages = numOfRows/pageSize;
             }
             return pages;
         }
 
-        public List<Activity> GetPage(int pageNumber) // pageNum [1...GetPagesNum];   page size???
+        public List<Activity> GetPage(int pageNumber)
         {
             List<Activity> list = new List<Activity>();
 
@@ -104,9 +104,10 @@ namespace MyLib
             SqliteCommand command = connection.CreateCommand();
             command.CommandText = 
             @"
-                SELECT * FROM activities LIMIT 10 OFFSET ($pageN-1)*10;
+                SELECT * FROM activities LIMIT $pageS OFFSET ($pageN-1)*10;
             ";
             command.Parameters.AddWithValue("$pageN", pageNumber);
+            command.Parameters.AddWithValue("$pageS", pageSize);
 
             SqliteDataReader reader = command.ExecuteReader();
 
@@ -127,72 +128,12 @@ namespace MyLib
             return list;
         }
 
-        public long GetTotalPages2(string value) // rename function; page size???
-        {
-            connection.Open();
-
-            SqliteCommand command = connection.CreateCommand();
-            command.CommandText = 
-            @"
-                SELECT COUNT(*) FROM activities
-                WHERE name LIKE '%' || $value || '%';
-            ";
-            command.Parameters.AddWithValue("$value", value);
-            long numOfRows = (long)command.ExecuteScalar();
-
-            connection.Close();
-
-            long pages = 0;
-            if(numOfRows%10 != 0)
-            {
-                pages = numOfRows/10 + 1;
-            }
-            else
-            {
-                pages = numOfRows/10;
-            }
-            return pages;
-        }
-
-        public List<Activity> GetPage2(int pageNumber, string value) // rename function; page size???
-        {
-            List<Activity> list = new List<Activity>();
-
-            connection.Open();
-
-            SqliteCommand command = connection.CreateCommand();
-            command.CommandText = 
-            @"
-                SELECT * FROM activities 
-                WHERE name LIKE '%' || $value || '%'
-                LIMIT 10 OFFSET ($pageN-1)*10;
-            ";
-            command.Parameters.AddWithValue("$pageN", pageNumber);
-            command.Parameters.AddWithValue("$value", value);
-
-            SqliteDataReader reader = command.ExecuteReader();
-
-            while (reader.Read())
-            {
-                Activity a = new Activity();
-                a.id = int.Parse(reader.GetString(0));
-                a.type = reader.GetString(1);
-                a.name = reader.GetString(2);
-                a.comment = reader.GetString(3);
-                a.distance = int.Parse(reader.GetString(4));
-                a.createdAt = DateTime.Parse(reader.GetString(5));
-                list.Add(a);
-            }
-            reader.Close();
-
-            connection.Close();
-            return list;
-        }
+        public static int pageSize = 5;
     }
 
     public class Activity
     {
-        public int id; // type - long?
+        public long id;
         public string type;
         public string name;
         public string comment;
@@ -202,6 +143,11 @@ namespace MyLib
         public Activity()
         {
             this.createdAt = DateTime.Now;
+        }
+
+        public override string ToString()
+        {
+            return $"[{id}] {name} | {distance}";
         }
     }
 }
