@@ -43,7 +43,7 @@ class Program
 
     static void OnAbout()
     {
-        string information = "bruh...i'm just flexin'\n   ";
+        string information = "hi :)\nthis program allows you to manage your data\n(\\__/)\n( . .)\n/ >< \\\n   ";
 
         int index = MessageBox.Query("info", information, "Ok");
         if(index == 1)
