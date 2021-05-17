@@ -41,13 +41,15 @@ class Program
         Application.Run();
     }
 
-    static void OnAbout() // show dialog with some info
+    static void OnAbout()
     {
-        // zahodit ulitka v bar i govorit < mozshno viski s koloi ? >
-        // a barmen ei otvechaet - U nas strogaya politika po otnosheniu k ulitkam. Ulitok ne obsluzshivaem.
-        // i vikinul ulitku za dveri.
-        // prohodit nedelia. ulitka snova zahodit v bar i govorit <nu i zachem ti eto sdelal ????>
-        throw new NotImplementedException();
+        string information = "bruh...i'm just flexin'\n   ";
+
+        int index = MessageBox.Query("info", information, "Ok");
+        if(index == 1)
+        {
+            Application.RequestStop();
+        }
     }
 
     static void OnQuit()

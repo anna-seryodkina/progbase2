@@ -17,8 +17,8 @@ public class OpenActivityDialog : Dialog
     public OpenActivityDialog()
     {
         this.Title = "open activity";
-
-        
+        this.Width = Dim.Percent(80);
+        this.Height = Dim.Percent(80);
 
         Button updateBtn = new Button(2, 15, "Update");
         updateBtn.Clicked += OnUpdate;
