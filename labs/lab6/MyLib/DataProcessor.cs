@@ -35,7 +35,7 @@ namespace MyLib
             return newId;
         }
 
-        public bool Delete(int activityId)
+        public bool Delete(long activityId)
         {
             this.connection.Open();
  
@@ -48,29 +48,39 @@ namespace MyLib
 
             if (nChanged == 0)
             {
-                return false; // Console.WriteLine("Activity NOT deleted.");
+                return false;
             }
             else 
             {
-                return true; // Console.WriteLine("Activity deleted.");
+                return true;
             }
         }
 
-        public bool Update(string value)
+        public bool Update(long activityId, Activity newActivity)
         {
-            throw new NotImplementedException();
-            // connection.Open();
+            connection.Open();
 
-            // SqliteCommand command = connection.CreateCommand();
-            // command.CommandText = 
-            // @"
-            //     UPDATE activities
-            //     SET 
-            // ";
-            // connection.Close();
+            SqliteCommand command = connection.CreateCommand();
+            command.CommandText = 
+            @"
+                UPDATE activities
+                SET type = $type, name = $name, comment = $comment, distance = $distance
+                WHERE id = $id
+            ";
+            command.Parameters.AddWithValue("$id", activityId);
+            command.Parameters.AddWithValue("$type", newActivity.type);
+            command.Parameters.AddWithValue("$name", newActivity.name);
+            command.Parameters.AddWithValue("$comment", newActivity.comment);
+            command.Parameters.AddWithValue("$distance", newActivity.distance);
+
+            int nChanged = command.ExecuteNonQuery();
+
+            connection.Close();
+
+            return nChanged == 1;
         }
 
-        public long GetTotalPages()
+        public long GetTotalPages(int pageSize)
         {
             connection.Open();
 
@@ -95,8 +105,12 @@ namespace MyLib
             return pages;
         }
 
-        public List<Activity> GetPage(int pageNumber)
+        public List<Activity> GetPage(int pageNumber, int pageSize)
         {
+            if(pageNumber < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(pageNumber));
+            }
             List<Activity> list = new List<Activity>();
 
             connection.Open();
@@ -104,7 +118,7 @@ namespace MyLib
             SqliteCommand command = connection.CreateCommand();
             command.CommandText = 
             @"
-                SELECT * FROM activities LIMIT $pageS OFFSET ($pageN-1)*10;
+                SELECT * FROM activities LIMIT $pageS OFFSET ($pageN-1)*$pageS;
             ";
             command.Parameters.AddWithValue("$pageN", pageNumber);
             command.Parameters.AddWithValue("$pageS", pageSize);
@@ -127,8 +141,6 @@ namespace MyLib
             connection.Close();
             return list;
         }
-
-        public static int pageSize = 5;
     }
 
     public class Activity

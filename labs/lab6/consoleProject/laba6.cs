@@ -7,7 +7,11 @@ using Terminal.Gui;
 class Program
 {
     static ActivityRepository activityRepository;
-    static ListView allActivitiesListView;
+
+    public static string[] activities = new string[]
+    {
+        "walking", "running", "cycling", "swimming", "other"
+    };
 
     static void Main(string[] args)
     {
@@ -17,9 +21,14 @@ class Program
         //
         Application.Init();
 
+        Toplevel top = Application.Top;
+
+        MainWindow win = new MainWindow();
+        win.SetRepository(activityRepository);
+
         MenuBar menu = new MenuBar(new MenuBarItem[] {
             new MenuBarItem ("_File", new MenuItem [] {
-                new MenuItem("_New", "", OnNew),
+                new MenuItem("_New", "", win.OnCreateButtonClicked),
                 new MenuItem ("_Quit", "", OnQuit)
             }),
             new MenuBarItem ("_Help", new MenuItem [] {
@@ -27,93 +36,9 @@ class Program
             }),
         });
 
-        Toplevel top = Application.Top;
-        Window win = new Window("Bruh")
-        {
-            X = 0,
-            Y = 1,
-            Width = Dim.Fill(),
-            Height = Dim.Fill() - 1
-        };
         top.Add(menu, win);
 
-
-
-
-        Button nextPageBtn = new Button(1, 3, "<- Prev Page");
-        nextPageBtn.Clicked += OnNextPageButton;
-        win.Add(nextPageBtn);
-
-        string pagesInfo = $"Total pages: {activityRepository.GetTotalPages()}  Current page: {pageNum}";
-        Label pagesInfoLbl = new Label(22, 3, pagesInfo);
-        win.Add(pagesInfoLbl);
-
-
-        Button prevPageBtn = new Button(60, 3, "Next Page ->");
-        prevPageBtn.Clicked += OnPrevPageButton;
-        win.Add(prevPageBtn);
-
-
-        Rect frame = new Rect(4, 8, top.Frame.Width, 200);
-        allActivitiesListView = new ListView(frame, activityRepository.GetPage(pageNum));
-        allActivitiesListView.OpenSelectedItem += OnItemSelected;
-        win.Add(allActivitiesListView);
-
-
-        Button createNewActivityBtn = new Button(2, 20, "create new activity");
-        createNewActivityBtn.Clicked += OnCreateButtonClicked;
-        win.Add(createNewActivityBtn);
-
-
         Application.Run();
-
-    }
-
-    static void OnCreateButtonClicked()
-    {
-        CreateActivityDialog dialog = new CreateActivityDialog();
-        Application.Run(dialog);
-
-        if(!dialog.canceled)
-        {
-            // switch to [перегляд] window
-            Activity activity = dialog.GetActivity();
-            long activityId = activityRepository.Insert(activity);
-            activity.id = activityId;
-        }
-    }
-
-    static int pageNum = 1;
-
-    static void OnNextPageButton()
-    {
-        pageNum++;
-        List<Activity> activitiesList = (List<Activity>)allActivitiesListView.Source.ToList();
-        activitiesList = activityRepository.GetPage(pageNum);
-        allActivitiesListView.SetSource(activitiesList);
-    }
-
-    static void OnPrevPageButton()
-    {
-        pageNum -= 1;
-        List<Activity> activitiesList = (List<Activity>)allActivitiesListView.Source.ToList();
-        activitiesList = activityRepository.GetPage(pageNum);
-        allActivitiesListView.SetSource(activitiesList);
-    }
-
-
-    static void OnItemSelected(ListViewItemEventArgs args)
-    {
-        // switch to another window
-        int itemIndex = args.Item;
-        Activity value = (Activity)args.Value;
-
-        throw new NotImplementedException();
-    }
-
-    static void OnNew()
-    {
-        throw new NotImplementedException();
     }
 
     static void OnAbout() // show dialog with some info
